@@ -11,7 +11,7 @@ class AnimatedWheelItem extends AnimatedWidget {
   Widget build(BuildContext context) {
     final animValue = (listenable as Animation<double>).value;
     return Transform.rotate(
-      origin: Offset(215, 215),
+      origin: Offset(215, 215), //TODO FIX
       angle: angle + (animValue * 6.28),
       child: child,
     );
