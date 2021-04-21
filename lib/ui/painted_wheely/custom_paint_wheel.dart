@@ -1,4 +1,4 @@
-import 'package:eenywheely/main.dart';
+import 'package:eenywheely/state/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:matrix4_transform/matrix4_transform.dart';
@@ -10,33 +10,29 @@ class CustomPaintWheel extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final List<String> names = watch(canidatesProvider);
     final double wheelDiameter = MediaQuery.of(context).size.width - 40.0;
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              child: CustomPaint(
-                size: Size(wheelDiameter, wheelDiameter),
-                painter: WheelPainter(names),
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                children: names
-                    .map(
-                      (name) => Container(
-                        child: ListTile(
-                          leading: Icon(Icons.wb_sunny),
-                          title: Text(name),
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-          ],
+    return Column(
+      children: [
+        Container(
+          child: CustomPaint(
+            size: Size(wheelDiameter, wheelDiameter),
+            painter: WheelPainter(names),
+          ),
         ),
-      ),
+        Expanded(
+          child: ListView(
+            children: names
+                .map(
+                  (name) => Container(
+                    child: ListTile(
+                      leading: Icon(Icons.wb_sunny),
+                      title: Text(name),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ],
     );
   }
 }
