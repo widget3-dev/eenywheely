@@ -6,8 +6,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class WheelyView extends HookWidget {
-  static const kForce = 3.8; // between 1 and 10
-  static const kRotationsPerForce = 5; //between 1 and 10
+  static const kForce = 3; // between 1 and 10
+  static const kRotationsPerForce = 2; //between 1 and 10
+  static const kRadians = 6.28319;
 
   Map<int, Widget> _buildWheelItemMap(
       List<String> items, double radius, double radian) {
@@ -50,17 +51,20 @@ class WheelyView extends HookWidget {
   Widget build(BuildContext context) {
     final double diameter = MediaQuery.of(context).size.width;
     final List<String> items = useProvider(canidatesProvider);
-    final double radian = 6.28 / items.length;
+    final double radian = kRadians / items.length;
     final radius = diameter / 2;
 
     final AnimationController controller = useAnimationController(
       duration: Duration(seconds: 5),
     );
-    //controller.addListener(() => print('${controller.value}'));
-    controller.forward();
 
-    final Animation<double> animation =
-        Tween<double>(begin: 0, end: 1).animate(controller);
+    final curvedAnimation =
+        CurvedAnimation(curve: Curves.elasticOut, parent: controller);
+
+    final Animation<double> animation = Tween<double>(
+            begin: 0,
+            end: (kRotationsPerForce * kForce * kRadians) + (radian * 0))
+        .animate(curvedAnimation);
 
     final wheelItems = _buildWheelItemMap(items, radius, radian);
     final animatedWheelItems =

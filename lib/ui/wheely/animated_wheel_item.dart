@@ -12,7 +12,7 @@ class AnimatedWheelItem extends AnimatedWidget {
     final animValue = (listenable as Animation<double>).value;
     return Transform.rotate(
       origin: Offset(215, 215), //TODO FIX
-      angle: angle + (animValue * 6.28),
+      angle: angle + animValue, //(animValue * 6.28319),
       child: child,
     );
   }
