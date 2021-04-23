@@ -1,13 +1,12 @@
 import 'package:eenywheely/state/providers.dart';
 import 'package:eenywheely/ui/wheely/animated_wheel_item.dart';
+import 'package:eenywheely/ui/wheely/wheel_controller.dart';
 import 'package:eenywheely/ui/wheely/wheel_item_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class WheelyView extends HookWidget {
-  static const kForce = 3; // between 1 and 10
-  static const kRotationsPerForce = 2; //between 1 and 10
   static const kRadians = 6.28319;
 
   Map<int, Widget> _buildWheelItemMap(
@@ -27,12 +26,12 @@ class WheelyView extends HookWidget {
   }
 
   List<Widget> _buildAnimatedWheelItems(
-      Map<int, Widget> itemMap, Animation<double> animation, double radian) {
+      Map<int, Widget> itemMap, WheelController controller, double radian) {
     List<Widget> animatedItems = [];
 
     itemMap.forEach((index, item) {
       animatedItems.add(AnimatedWheelItem(
-        animation: animation,
+        controller: controller,
         angle: (index * radian),
         child: item,
       ));
@@ -41,10 +40,10 @@ class WheelyView extends HookWidget {
     return animatedItems;
   }
 
-  void _startWheel(AnimationController controller) {
+  void _startWheel(WheelController controller) {
     controller
       ..reset()
-      ..forward();
+      ..goTo(6);
   }
 
   @override
@@ -54,27 +53,26 @@ class WheelyView extends HookWidget {
     final double radian = kRadians / items.length;
     final radius = diameter / 2;
 
-    final AnimationController controller = useAnimationController(
+    final AnimationController animationController = useAnimationController(
       duration: Duration(seconds: 5),
     );
 
-    final curvedAnimation =
-        CurvedAnimation(curve: Curves.elasticOut, parent: controller);
-
-    final Animation<double> animation = Tween<double>(
-            begin: 0,
-            end: (kRotationsPerForce * kForce * kRadians) + (radian * 0))
-        .animate(curvedAnimation);
+    final wheelController = WheelController(
+      animation: animationController,
+      segmentCount: 8,
+    )..addListener(() {
+        print('wheelposition: ');
+      });
 
     final wheelItems = _buildWheelItemMap(items, radius, radian);
     final animatedWheelItems =
-        _buildAnimatedWheelItems(wheelItems, animation, radian);
+        _buildAnimatedWheelItems(wheelItems, wheelController, radian);
 
     return Scaffold(
       floatingActionButton: IconButton(
         iconSize: 42.0,
         icon: Icon(Icons.play_arrow_outlined),
-        onPressed: () => _startWheel(controller), //TODO FIX
+        onPressed: () => _startWheel(wheelController),
       ),
       body: SafeArea(
         child: Container(
