@@ -39,7 +39,7 @@ class WheelController extends ChangeNotifier {
   }
 
   void goTo(int index) {
-    final duration = 5000;
+    final duration = 7000;
     final extraRounds = 2 * segmentCount;
 
     final segmentsToTravel = (_wheelPosition < index)
@@ -65,7 +65,7 @@ class WheelController extends ChangeNotifier {
     //     ? Curves.easeOut
     //     : Curves.easeOutBack;
 
-    Curve curve = Curves.ease;
+    Curve curve = Curves.easeOutCubic;
 
     curvedAnimation = CurvedAnimation(parent: animation, curve: curve)
       ..removeListener(previousAnimPos)
