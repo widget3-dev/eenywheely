@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:eenywheely/state/providers.dart';
 import 'package:eenywheely/ui/wheely/animated_wheel_item.dart';
 import 'package:eenywheely/ui/wheely/wheel_controller.dart';
@@ -8,6 +10,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class WheelyView extends HookWidget {
   static const kRadians = 6.28319;
+
+  final WheelController controller;
+
+  const WheelyView({Key key, this.controller}) : super(key: key);
 
   Map<int, Widget> _buildWheelItemMap(
       List<String> items, double radius, double radian) {
@@ -40,10 +46,10 @@ class WheelyView extends HookWidget {
     return animatedItems;
   }
 
-  void _startWheel(WheelController controller) {
+  void _startWheel(int total) {
     controller
       ..reset()
-      ..goTo(6);
+      ..goTo(Random().nextInt(total));
   }
 
   @override
@@ -53,26 +59,15 @@ class WheelyView extends HookWidget {
     final double radian = kRadians / items.length;
     final radius = diameter / 2;
 
-    final AnimationController animationController = useAnimationController(
-      duration: Duration(seconds: 5),
-    );
-
-    final wheelController = WheelController(
-      animation: animationController,
-      segmentCount: 8,
-    )..addListener(() {
-        print('wheelposition: ');
-      });
-
     final wheelItems = _buildWheelItemMap(items, radius, radian);
     final animatedWheelItems =
-        _buildAnimatedWheelItems(wheelItems, wheelController, radian);
+        _buildAnimatedWheelItems(wheelItems, controller, radian);
 
     return Scaffold(
       floatingActionButton: IconButton(
         iconSize: 42.0,
         icon: Icon(Icons.play_arrow_outlined),
-        onPressed: () => _startWheel(wheelController),
+        onPressed: () => _startWheel(items.length),
       ),
       body: SafeArea(
         child: Container(

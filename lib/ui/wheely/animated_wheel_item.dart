@@ -11,6 +11,7 @@ class AnimatedWheelItem extends AnimatedWidget {
   @override
   Widget build(BuildContext context) {
     final animValue = (listenable as WheelController).position;
+    print('rebuilding ${angle + animValue}');
     return Transform.rotate(
       origin: Offset(215, 215), //TODO FIX
       angle: angle + animValue, //(animValue * 6.28319),
