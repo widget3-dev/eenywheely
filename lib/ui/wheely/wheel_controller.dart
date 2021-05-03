@@ -19,11 +19,10 @@ class WheelController extends ChangeNotifier {
   set _position(double pos) {
     _animPosition = pos;
     _wheelPosition = pos.remainder(segmentCount);
-    if (_wheelPosition.round() != currentSegment)
-      _currentSegment = _wheelPosition.round();
+    if (_wheelPosition.floor() != currentSegment)
+      _currentSegment = _wheelPosition.floor();
     notifyListeners();
-    print('> $_animPosition');
-    print('> $_wheelPosition');
+    //print('> $_wheelPosition');
     print('> $_currentSegment');
   }
 
@@ -39,8 +38,8 @@ class WheelController extends ChangeNotifier {
   }
 
   void goTo(int index) {
-    final duration = 7000;
-    final extraRounds = 2 * segmentCount;
+    final duration = 12000;
+    final extraRounds = 1 * segmentCount;
 
     final segmentsToTravel = (_wheelPosition < index)
         ? index - _wheelPosition + extraRounds

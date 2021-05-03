@@ -5,16 +5,19 @@ class AnimatedWheelItem extends AnimatedWidget {
   final Widget child;
   final double angle;
 
-  AnimatedWheelItem({this.child, WheelController controller, this.angle})
-      : super(listenable: controller);
+  AnimatedWheelItem(
+      {Key key, this.child, WheelController controller, this.angle})
+      : super(key: key, listenable: controller);
+
+  static const kRadians = 6.28318530718;
 
   @override
   Widget build(BuildContext context) {
-    final animValue = (listenable as WheelController).position;
-    print('rebuilding ${angle + animValue}');
+    final position = (listenable as WheelController).position;
+    print('${(angle - position).remainder(kRadians)}');
     return Transform.rotate(
-      origin: Offset(215, 215), //TODO FIX
-      angle: angle + animValue, //(animValue * 6.28319),
+      origin: Offset(214, 214), //TODO FIX
+      angle: (angle - position).remainder(kRadians),
       child: child,
     );
   }

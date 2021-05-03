@@ -9,7 +9,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class WheelyView extends HookWidget {
-  static const kRadians = 6.28319;
+  static const kRadians = 6.28318530718;
 
   final WheelController controller;
 
@@ -20,6 +20,7 @@ class WheelyView extends HookWidget {
     Map<int, Widget> wheelItemMap = {};
     items.asMap().forEach((index, item) {
       wheelItemMap[index] = CustomPaint(
+        key: Key('painted$index'),
         painter: ItemPainter(
           text: item,
           radius: radius,
@@ -36,11 +37,14 @@ class WheelyView extends HookWidget {
     List<Widget> animatedItems = [];
 
     itemMap.forEach((index, item) {
-      animatedItems.add(AnimatedWheelItem(
-        controller: controller,
-        angle: (index * radian),
-        child: item,
-      ));
+      animatedItems.add(
+        AnimatedWheelItem(
+          key: Key('animated$index'),
+          controller: controller,
+          angle: (index * radian + radian / 2),
+          child: item,
+        ),
+      );
     });
 
     return animatedItems;
