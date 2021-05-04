@@ -6,8 +6,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 final wheelControllerProvider =
     ChangeNotifierProvider.family<WheelController, AnimationController>(
         (ref, controller) {
-  return WheelController(
-      animation: controller, segmentCount: ref.watch(canidatesProvider).length);
+  final count = ref.read(canidatesProvider).length;
+  return WheelController(animationController: controller, segmentCount: count);
 });
 
 //bad bad bad but let's see what happens

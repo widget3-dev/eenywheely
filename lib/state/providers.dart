@@ -9,7 +9,7 @@ final canidatesProvider = Provider((_) => [
       'Daenerys Targaryen',
       'Jorah Mormont',
       'Viserys Targaryen',
-      'Jon Snow',
+      // 'Jon Snow',
       // 'Robb Stark',
       // 'Sansa Stark',
       // 'Arya Stark',
