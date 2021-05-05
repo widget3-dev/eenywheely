@@ -24,6 +24,7 @@ class WheelController extends ChangeNotifier {
 
   //setting all positions
   set _position(double pos) {
+    print('pos $pos');
     _animPosition = pos;
     _wheelPosition = pos.remainder(segmentCount);
     if (_wheelPosition.floor() != currentSegment)
@@ -44,14 +45,14 @@ class WheelController extends ChangeNotifier {
 
   void goTo(int index, [ScrollDirection direction = ScrollDirection.forward]) {
     final duration = 4000;
-    final extraRounds = 0 * segmentCount;
+    final extraRounds = 1 * segmentCount;
     final directionSign = (direction == ScrollDirection.forward) ? -1.0 : 1.0;
 
     double segmentsToTravel = 0.0;
 
     if (direction == ScrollDirection.forward) {
       if (_wheelPosition <= index) {
-        segmentsToTravel = index - _wheelPosition + extraRounds + 0.4;
+        segmentsToTravel = index - _wheelPosition + extraRounds + 0.3;
       } else {
         segmentsToTravel = segmentCount - _wheelPosition + index + extraRounds;
       }
@@ -74,15 +75,6 @@ class WheelController extends ChangeNotifier {
       };
     };
 
-    Function animateFinale = () {
-      var startPosition = _animPosition;
-      print('returning function');
-      return () {
-        _position = startPosition - (curvedAnimation.value * 0.4);
-        print('finale $_wheelPosition');
-      };
-    };
-
     Function animPos = animatePosition();
 
     //for removing listener that might never have been removed
@@ -96,14 +88,39 @@ class WheelController extends ChangeNotifier {
     animationController.forward()
       ..whenComplete(() {
         curvedAnimation.removeListener(animPos);
-        animationController
-            .addListener(() => print('${animationController.value}'));
-        animationController.duration = Duration(milliseconds: 300);
-        animationController.reset();
-        curvedAnimation =
-            CurvedAnimation(parent: animationController, curve: Curves.easeIn);
-        curvedAnimation.addListener(animateFinale);
-        animationController.forward();
+        goToFinale();
+        print('done with the first anim');
       });
+  }
+
+  Future goToFinale() {
+    final duration = 3000;
+
+    animationController.reset();
+    animationController.duration = Duration(milliseconds: duration);
+
+    Function animateFinale = () {
+      var startPosition = _animPosition;
+      return () {
+        _position = startPosition + (curvedAnimation.value * 0.3);
+      };
+    };
+
+    Function animPos = animateFinale();
+
+    //for removing listener that might never have been removed
+    previousAnimPos = animPos;
+
+    curvedAnimation = CurvedAnimation(
+        parent: animationController, curve: Curves.linearToEaseOut)
+      ..removeListener(previousAnimPos)
+      ..addListener(animPos);
+
+    animationController.forward()
+      ..whenComplete(() {
+        curvedAnimation.removeListener(animPos);
+      });
+
+    return null;
   }
 }
