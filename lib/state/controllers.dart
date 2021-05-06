@@ -7,7 +7,10 @@ final wheelControllerProvider =
     ChangeNotifierProvider.family<WheelController, AnimationController>(
         (ref, controller) {
   final count = ref.read(canidatesProvider).length;
-  return WheelController(animationController: controller, segmentCount: count);
+  return WheelController(
+    animationController: controller,
+    numberOfSegments: count,
+  );
 });
 
 //bad bad bad but let's see what happens

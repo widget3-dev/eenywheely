@@ -1,126 +1,96 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+
+enum WheelDirection { clockwise, anticlockwise }
 
 class WheelController extends ChangeNotifier {
   AnimationController animationController;
-  int segmentCount;
+  int numberOfSegments;
 
-  WheelController(
-      {@required this.segmentCount, @required this.animationController});
+  WheelController({
+    @required this.numberOfSegments,
+    @required this.animationController,
+  });
 
   int _currentSegment = 0;
   int get currentSegment => _currentSegment;
 
-  //position consumed by listeners
-  double get position => _wheelPosition;
+  double _position = 0.0;
+  double get position => _position;
 
-  //angle consumed by listeners
-  double get angle => _wheelPosition * ((pi * 2) / segmentCount);
+  double get angle => _position * ((pi * 2) / numberOfSegments);
 
-  //real animation position
-  double _animPosition = 0.0;
+  double _controllerPosition = 0.0;
 
-  //setting all positions
-  set _position(double pos) {
-    print('pos $pos');
-    _animPosition = pos;
-    _wheelPosition = pos.remainder(segmentCount);
-    if (_wheelPosition.floor() != currentSegment)
-      _currentSegment = _wheelPosition.floor();
+  //always set position via this function
+  setControllerPosition(double position) {
+    _controllerPosition = position;
+    _position = position.remainder(numberOfSegments);
+    if (_position.floor() != currentSegment)
+      _currentSegment = _position.floor();
     notifyListeners();
   }
-
-  //wheel position
-  double _wheelPosition = 0.0;
-
-  Animation<double> curvedAnimation;
-  Function previousAnimPos = () => {};
 
   void reset() {
-    _position = 0.0;
+    setControllerPosition(0.0);
     notifyListeners();
   }
 
-  void goTo(int index, [ScrollDirection direction = ScrollDirection.forward]) {
-    final duration = 4000;
-    final extraRounds = 1 * segmentCount;
-    final directionSign = (direction == ScrollDirection.forward) ? -1.0 : 1.0;
+  void goTo(int index,
+      [WheelDirection direction = WheelDirection.clockwise]) async {
+    final extraRounds = 0 * numberOfSegments;
+    final directionSign = (direction == WheelDirection.clockwise) ? -1.0 : 1.0;
 
-    double segmentsToTravel = 0.0;
+    double distance = 0.0;
 
-    if (direction == ScrollDirection.forward) {
-      if (_wheelPosition <= index) {
-        segmentsToTravel = index - _wheelPosition + extraRounds + 0.3;
+    if (direction == WheelDirection.clockwise) {
+      if (_position <= index) {
+        distance = index - _position + extraRounds + 0.3;
       } else {
-        segmentsToTravel = segmentCount - _wheelPosition + index + extraRounds;
+        distance = numberOfSegments - _position + index + extraRounds;
       }
     } else {
-      if (_wheelPosition <= index) {
-        segmentsToTravel = (segmentCount - index + extraRounds).toDouble();
+      if (_position <= index) {
+        distance = (numberOfSegments - index + extraRounds).toDouble();
       } else {
-        segmentsToTravel = _wheelPosition - index + extraRounds;
+        distance = _position - index + extraRounds;
       }
     }
 
-    animationController.reset();
-    animationController.duration = Duration(milliseconds: duration);
+    await _goTo(
+      start: _controllerPosition,
+      distance: directionSign * distance,
+      curve: Curves.easeOutCubic,
+      duration: Duration(seconds: 2),
+    );
 
-    Function animatePosition = () {
-      var startPosition = _animPosition;
-      return () {
-        _position = directionSign *
-            (startPosition + (segmentsToTravel * curvedAnimation.value));
-      };
-    };
-
-    Function animPos = animatePosition();
-
-    //for removing listener that might never have been removed
-    previousAnimPos = animPos;
-
-    curvedAnimation =
-        CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic)
-          ..removeListener(previousAnimPos)
-          ..addListener(animPos);
-
-    animationController.forward()
-      ..whenComplete(() {
-        curvedAnimation.removeListener(animPos);
-        goToFinale();
-        print('done with the first anim');
-      });
+    await _goTo(
+      start: _controllerPosition,
+      distance: -directionSign * 0.3,
+      curve: Curves.ease,
+      duration: Duration(milliseconds: 300),
+    );
   }
 
-  Future goToFinale() {
-    final duration = 3000;
+  Future _goTo({
+    double start,
+    double distance,
+    Duration duration,
+    Curve curve,
+  }) async {
+    Animation<double> curvedAnimation = CurvedAnimation(
+      parent: animationController,
+      curve: curve,
+    );
 
     animationController.reset();
-    animationController.duration = Duration(milliseconds: duration);
+    animationController.duration = duration;
 
-    Function animateFinale = () {
-      var startPosition = _animPosition;
-      return () {
-        _position = startPosition + (curvedAnimation.value * 0.3);
-      };
-    };
+    Function calculatePosition =
+        () => setControllerPosition(start + (curvedAnimation.value * distance));
 
-    Function animPos = animateFinale();
-
-    //for removing listener that might never have been removed
-    previousAnimPos = animPos;
-
-    curvedAnimation = CurvedAnimation(
-        parent: animationController, curve: Curves.linearToEaseOut)
-      ..removeListener(previousAnimPos)
-      ..addListener(animPos);
-
-    animationController.forward()
-      ..whenComplete(() {
-        curvedAnimation.removeListener(animPos);
-      });
-
-    return null;
+    curvedAnimation.addListener(calculatePosition);
+    await animationController.forward().orCancel;
+    curvedAnimation.removeListener(calculatePosition);
   }
 }
